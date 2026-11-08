@@ -1,0 +1,108 @@
+@baseUrl = http://localhost:5080
+@userId = {{createUser.response.body.$.id}}
+@bookId = {{createBook.response.body.$.id}}
+@loanId = {{createLoan.response.body.$.id}}
+
+### Buat anggota — 201. Gunakan email lain bila request diulang.
+# @name createUser
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Budi Santoso",
+  "email": "budi@example.com"
+}
+
+### Daftar anggota — 200
+GET {{baseUrl}}/api/users
+
+### Detail anggota — 200
+GET {{baseUrl}}/api/users/{{userId}}
+
+### Ubah anggota — 200
+PUT {{baseUrl}}/api/users/{{userId}}
+Content-Type: application/json
+
+{
+  "fullName": "Budi Santoso Updated",
+  "email": "budi.updated@example.com"
+}
+
+### Input tidak valid — 400
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "fullName": " ",
+  "email": "bukan-email"
+}
+
+### Tambah buku — 201. ISBN harus unik.
+# @name createBook
+POST {{baseUrl}}/api/books
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "totalCopies": 2
+}
+
+### Daftar buku dan stok tersedia — 200
+GET {{baseUrl}}/api/books
+
+### Detail buku — 200
+GET {{baseUrl}}/api/books/{{bookId}}
+
+### Ubah buku — 200
+PUT {{baseUrl}}/api/books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "totalCopies": 3
+}
+
+### Pinjam buku — 201
+# @name createLoan
+POST {{baseUrl}}/api/loans
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "bookId": {{bookId}},
+  "durationDays": 14
+}
+
+### Pinjaman ganda — 409 selama pinjaman di atas aktif
+POST {{baseUrl}}/api/loans
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "bookId": {{bookId}}
+}
+
+### Daftar peminjaman — 200
+GET {{baseUrl}}/api/loans
+
+### Detail peminjaman — 200
+GET {{baseUrl}}/api/loans/{{loanId}}
+
+### Kembalikan buku — 200; ulangi untuk melihat 409
+PUT {{baseUrl}}/api/loans/{{loanId}}/return
+
+### Hapus anggota — 409 bila punya riwayat; 204 jika belum pernah meminjam
+DELETE {{baseUrl}}/api/users/{{userId}}
+
+### Hapus buku — 409 bila punya riwayat; 204 jika belum pernah dipinjam
+DELETE {{baseUrl}}/api/books/{{bookId}}
+
+### Data tidak ada — 404
+GET {{baseUrl}}/api/users/2147483647
+
+### OpenAPI — 200
+GET {{baseUrl}}/openapi/v1.json
